@@ -1,0 +1,34 @@
+- name: Configure development
+  hosts: all
+  become: True
+  vars:
+    key_file: /etc/nginx/ssl/nginx.key
+    cert_file: /etc/nginx/ssl/nginx.crt
+    conf_file: /etc/nginx/sites-available/default
+    server_name: localhost
+  tasks:
+      - name: set timezone to Asia/Tokyo
+        file: src=/usr/share/zoneinfo/Asia/Tokyo dest=/etc/localtime state=link force=yes
+
+      - name: install with_items
+        apt:
+            name: "{{ item.name }}"
+            state: installed
+        with_items:
+            - name: zsh
+            - name: tmux
+            - name: vim-gnome
+            - name: git
+
+      - name: set zsh as default shell for vagrant user
+        command: chsh -s '/bin/zsh' ubuntu
+
+      - name: git clone my dotfiles
+        git:
+            repo: https://github.com/SeijiZ/.dotfiles
+            dest: "/home/ubuntu/.dotfiles"
+
+      - name: install pyenv
+        git:
+            repo: https://github.com/pyenv/pyenv
+            dest: "/home/ubuntu/.pyenv"
