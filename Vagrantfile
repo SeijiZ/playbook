@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
         vagrant1.vm.box = "ubuntu/xenial64"
         vagrant1.vm.network "forwarded_port" , guest: 80,host:8080
         vagrant1.vm.network "forwarded_port" , guest: 443,host: 8443
-       #vagrant1.vm.network "private_network" , ip: "192.168.33.10"
+        vagrant1.vm.network "private_network" , ip: "192.168.33.10"
         vagrant1.vm.provision "shell",inline:<<-SCRIPT
         if type python > /dev/null 2>&1;then
             echo "python already exist"
@@ -81,13 +81,24 @@ Vagrant.configure("2") do |config|
   # backing providers for Vagrant. These expose provider-specific options.
   # Example for VirtualBox:
   #
-  #config.vm.provider "virtualbox" do |vb|
-  #  # Display the VirtualBox GUI when booting the machine
-  #  vb.gui = false
-  #
-  #  # Customize the amount of memory on the VM:
-  #  vb.memory = "1024"
-  # end
+  config.vm.provider "virtualbox" do |vb|
+    # Display the VirtualBox GUI when booting the machine
+    vb.gui = false
+  
+    # Customize the amount of memory on the VM:
+    #vb.memory = "1024"
+    vb.customize [
+        "modifyvm", :id,
+        "--memory", "1024",
+        "--cpus", "2",
+        "--hwvirtex", "on",
+        "--nestedpaging", "on",
+        "--largepages", "on",
+        "--ioapic", "on",
+        "--pae", "on",
+        "--paravirtprovider", "kvm",
+    ]
+   end
   ##
   # View the documentation for the provider you are using for more
   # information on available options.

@@ -2,6 +2,7 @@
   hosts: all
   become: True
   vars:
+    user: ubuntu
     key_file: /etc/nginx/ssl/nginx.key
     cert_file: /etc/nginx/ssl/nginx.crt
     conf_file: /etc/nginx/sites-available/default
@@ -14,21 +15,37 @@
         apt:
             name: "{{ item.name }}"
             state: installed
+        register: Result
         with_items:
             - name: zsh
             - name: tmux
             - name: vim-gnome
             - name: git
+            - name: openjdk-8-jdk
+
+      - name: results
+        debug: var=Result.results
 
       - name: set zsh as default shell for vagrant user
         command: chsh -s '/bin/zsh' ubuntu
 
-      - name: git clone my dotfiles
-        git:
-            repo: https://github.com/SeijiZ/.dotfiles
-            dest: "/home/ubuntu/.dotfiles"
+      - setup:
+        become: False
+        become_user: "{{ user }}"
 
-      - name: install pyenv
+      - name: git clone .dotfiles pyenv
+        become: False
+        become_user: "{{ user }}"
         git:
-            repo: https://github.com/pyenv/pyenv
-            dest: "/home/ubuntu/.pyenv"
+            repo: "{{ item.repo }}"
+            dest: "{{ item.dest }}"
+        register: Result
+        with_items:
+            - repo: https://github.com/SeijiZ/.dotfiles
+              dest: "{{ ansible_env.HOME }}/.dotfiles"
+            - repo: https://github.com/pyenv/pyenv
+              dest: "{{ ansible_env.HOME }}/.pyenv"
+
+      - name: results
+        debug: var=Result.results
+
